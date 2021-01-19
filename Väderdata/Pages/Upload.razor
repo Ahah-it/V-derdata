@@ -1,0 +1,49 @@
+﻿
+@page "/upload"
+@using Väderdata.Data
+@using System.IO;
+@using Microsoft.AspNetCore.Components.Forms;
+@using Microsoft.AspNetCore.Hosting
+@inject IWebHostEnvironment env
+
+<h3>Upload csv file</h3>
+<h3>@Message</h3>
+
+<form @onsubmit="OnSubmit">
+    <InputFile OnChange="OnInputFileChange" multiple />
+    <br /><br />
+    <button type="submit">Upload File</button>
+</form>
+
+@code {
+
+    string Message = "No file selected";
+    IReadOnlyList<IBrowserFile> selectedFiles;
+
+    void OnInputFileChange(InputFileChangeEventArgs e)
+    {
+        selectedFiles = e.GetMultipleFiles();
+        Message = $"{selectedFiles.Count} file selected";
+        this.StateHasChanged();
+    }
+
+    async void OnSubmit()
+    {
+        foreach (var file in selectedFiles)
+        {
+            //Behövs för filstorlek
+            Stream stream = file.OpenReadStream(10140555, default);
+            var path = $"{env.WebRootPath}\\{file.Name}";
+            FileStream fs = File.Create(path);
+            await stream.CopyToAsync(fs);
+            stream.Close();
+            fs.Close();
+        }
+        Message = $"{selectedFiles.Count} file uploaded to server";
+        this.StateHasChanged();
+    }
+
+}
+
+
+
