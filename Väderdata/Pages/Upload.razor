@@ -1,10 +1,11 @@
 ﻿
 @page "/upload"
-@using Väderdata.Data
 @using System.IO;
 @using Microsoft.AspNetCore.Components.Forms;
 @using Microsoft.AspNetCore.Hosting
+@using Väderdata.Services; 
 @inject IWebHostEnvironment env
+@inject FileService context;
 
 <h3>Upload csv file</h3>
 <h3>@Message</h3>
@@ -33,14 +34,16 @@
         {
             //Behövs för filstorlek
             Stream stream = file.OpenReadStream(10140555, default);
-            var path = $"{env.WebRootPath}\\{file.Name}";
+            var path = $"{env.WebRootPath}\\db.csv";
             FileStream fs = File.Create(path);
             await stream.CopyToAsync(fs);
             stream.Close();
             fs.Close();
         }
         Message = $"{selectedFiles.Count} file uploaded to server";
+        Message = $"Inserted {context.ReadFileIntoDatabase()} measurements";
         this.StateHasChanged();
+
     }
 
 }

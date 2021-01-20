@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Väderdata.Data;
+using Väderdata.Services;
 
 namespace Väderdata
 {
@@ -30,9 +31,11 @@ namespace Väderdata
             services.AddRazorPages();
             services.AddServerSideBlazor();
 
-            //Lägg till dbcontext och konfigurera.
+            //Add dbcontext.
             services.AddDbContext<WeatherContext>( options => 
                 options.UseSqlServer(Configuration.GetConnectionString("sqlConnection")));
+            //Service for reading parsing csv file.
+            services.AddScoped<FileService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
