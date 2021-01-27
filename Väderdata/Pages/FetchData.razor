@@ -1,62 +1,72 @@
 ﻿@page "/fetchdata"
 
 @using Väderdata.Data
-@using Väderdata.Services;
 @inject WeatherContext context;
 
 <h1>Weather forecast</h1>
-
+<p>@dateView.AverageTemperature</p>
 <p>This component demonstrates fetching data from a service.</p>
-<EditForm Model=@test OnSubmit=@DateSubmitted>
-    <InputDate @bind-Value=test.Date ParsingErrorMessage="Must be a date" />
+<EditForm Model=@dateView OnSubmit=@DateSubmitted>
+    <InputDate @bind-Value=dateView.Date ParsingErrorMessage="Must be a date" />
     <br />
     <input type="submit" value="Submit" class="btn btn-primary" />
+    
 </EditForm>
+<button @onclick=ToggleButton class="btn btn-primary">@toggleLocation</button>
 
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Location</th>
-                    <th>Temperature</th>
-                    <th>Humidity</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (test.weatherData != null)
-                {
-                @foreach (var m in test.weatherData)
-                {
+<table class="table">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Location</th>
+            <th>Temperature</th>
+            <th>Humidity</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (dateView.WeatherList != null)
+        {
+            @foreach (var m in dateView.WeatherList)
+            {
                 <tr>
                     <td>@m.Date</td>
                     <td>@m.Location</td>
                     <td>@m.Temperature</td>
                     <td>@m.Humidity</td>
                 </tr>
-                }
-                }
-            </tbody>
-        </table>
-
-        @code {
-
-            model test = new model();
-            class model
-            {
-                public DateTime Date { get; set; }
-                public List<Weather> weatherData;
-            }
-
-            async Task DateSubmitted()
-            {
-
-                test.weatherData = await Task.Run(()=>context.GetRecordsFromDate(test.Date));
-
-            }
-
-            protected override async Task OnInitializedAsync()
-            {
-
             }
         }
+    </tbody>
+</table>
+
+@code {
+
+    WeatherView dateView = new WeatherView();
+    string toggleLocation = "Outdoor";
+
+    void ToggleButton()
+    {
+        if (dateView.Location == "Inne")
+        {
+            toggleLocation = "Outdoor";
+            dateView.Location = "Ute";
+        } else
+        {
+            toggleLocation = "Indoor";
+            dateView.Location = "Inne";
+        }
+    }
+    async Task DateSubmitted()
+    {
+
+
+        dateView = await Task.Run(() => context.GetStatFromDate(dateView));
+        dateView.WeatherList = await Task.Run(() => context.GetRecordsFromDate(dateView));
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        dateView.Location = "Ute";
+    }
+}
 

@@ -40,6 +40,7 @@
             stream.Close();
             fs.Close();
         }
+
         Message = $"{selectedFiles.Count} file uploaded to server";
         Message = $"Inserted {context.ReadFileIntoDatabase()} measurements";
         this.StateHasChanged();

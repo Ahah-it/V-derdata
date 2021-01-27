@@ -35,7 +35,7 @@ namespace Väderdata
             services.AddDbContext<WeatherContext>( options => 
                 options.UseSqlServer(Configuration.GetConnectionString("sqlConnection")));
             //Service for reading parsing csv file.
-            services.AddScoped<FileService>();
+            services.AddScoped<FileIO>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
