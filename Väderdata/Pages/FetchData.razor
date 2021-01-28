@@ -3,23 +3,51 @@
 @using Väderdata.Data
 @inject WeatherContext context;
 
-<h1>Weather forecast</h1>
-<p>@dateView.AverageTemperature</p>
-<p>This component demonstrates fetching data from a service.</p>
+<h2>Enter date</h2>
 
 <EditForm Model=@dateView OnSubmit=@DateSubmitted>
     <InputDate @bind-Value=dateView.Date ParsingErrorMessage="Must be a date" />
     <br />
     <input type="submit" value="Submit" class="btn btn-primary" />
-    
 </EditForm>
 
 <button @onclick=ToggleButton class="btn btn-primary">@toggleLocation</button>
-
+<h2>Aggregate for the day</h2>
 <table class="table">
     <thead>
         <tr>
-            
+
+            <th>Date</th>
+            <th>Temperature</th>
+            <th>Humidity</th>
+            <th>Mould Risk</th>
+            <th>Location</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        <tr>
+            @if (dateView.Date != default(DateTime))
+            {
+                <td>@dateView.Date.ToShortDateString()</td>
+                <td>@String.Format("{0:#,##0.00}", dateView.AverageTemperature)</td>
+                <td>@String.Format("{0:#,##0.00}", dateView.AverageHumidity)</td>
+                <td>@String.Format("{0:#,##0.00}", dateView.MouldRisk)</td>
+                <td>@dateView.Location</td>
+            }
+            else
+            {
+                <td>Not Found</td>
+            }
+        </tr>
+        </tbody>
+
+    </table>
+
+<h2>Measurements for @dateView.Date.ToShortDateString()</h2>
+<table class="table">
+    <thead>
+        <tr>
             <th>Date</th>
             <th>Location</th>
             <th>Temperature</th>
@@ -27,18 +55,24 @@
         </tr>
     </thead>
     <tbody>
-        @if (dateView.WeatherList != null)
+        @if (dateView.WeatherList.Any())
         {
             @foreach (var m in dateView.WeatherList)
             {
                 <tr>
-                    
+
                     <td>@m.Date</td>
                     <td>@m.Location</td>
                     <td>@m.Temperature</td>
                     <td>@m.Humidity</td>
                 </tr>
             }
+        }
+        else
+        {
+    <tr>
+        <td>Not Found</td>
+    </tr>
         }
     </tbody>
 </table>
@@ -54,7 +88,8 @@
         {
             toggleLocation = "Outdoor";
             dateView.Location = "Ute";
-        } else
+        }
+        else
         {
             toggleLocation = "Indoor";
             dateView.Location = "Inne";
@@ -64,12 +99,22 @@
     async Task DateSubmitted()
     {
         dateView = await Task.Run(() => context.GetStatFromDate(dateView));
-        dateView.WeatherList = await Task.Run(() => context.GetRecordsFromDate(dateView));
+        if (dateView != null)
+        {
+            dateView.WeatherList = await Task.Run(() => context.GetRecordsFromDate(dateView));
+        } else
+        {
+            dateView = new WeatherView();
+            dateView.WeatherList = new List<Weather>();
+            dateView.Location = "Ute";
+            
+        }
     }
 
     protected override async Task OnInitializedAsync()
     {
         dateView.Location = "Ute";
+        dateView.WeatherList = new List<Weather>();
     }
 }
 
