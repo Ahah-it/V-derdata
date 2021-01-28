@@ -67,11 +67,11 @@ namespace Väderdata.Services
 
 
                 //Calculate Average and mould risk
-                indoorView.AverageHumidity = indoorView.WeatherList.Average(t => t.Temperature);
+                indoorView.AverageHumidity = indoorView.WeatherList.Average(t => t.Humidity);
                 indoorView.AverageTemperature = indoorView.WeatherList.Average(t => t.Temperature);
                 indoorView.MouldRisk = CalculateMouldRisk(indoorView);
 
-                outdoorView.AverageHumidity = outdoorView.WeatherList.Average(t => t.Temperature);
+                outdoorView.AverageHumidity = outdoorView.WeatherList.Average(t => t.Humidity);
                 outdoorView.AverageTemperature = outdoorView.WeatherList.Average(t => t.Temperature);
                 outdoorView.MouldRisk = CalculateMouldRisk(outdoorView);
 
