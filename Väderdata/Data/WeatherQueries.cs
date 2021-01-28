@@ -106,6 +106,25 @@ namespace Väderdata.Data
             return new DateTime();
         }
 
+
+        //Find summer start date.
+        public WeatherView GetSummerStartDate()
+        {
+            //5 consecutive days with temperatures above 10 degrees is summer.
+            List<WeatherView> validDates = GetTemperautreAverageWithinBounds(10, double.MaxValue);
+            DateTime startDate = GetFirstDateWithConsecutiveDays(validDates, 5);
+
+            if (startDate != default(DateTime))
+            {
+                return db.WeatherViewData
+                    .Where(x => x.Date.Date.Equals(startDate))
+                    .Where(l => l.Location.Contains("Ute"))
+                    .First();
+            }
+
+            return default(WeatherView);
+        }
+        //Find autumn start date.
         public WeatherView GetAutumnStartDate()
         {
             //5 consecutive days with temperatures below 10 and above 0 degrees is autumn season.
@@ -122,8 +141,9 @@ namespace Väderdata.Data
 
             return default(WeatherView);
         }
-        // Find winter Start Date.
-        public WeatherView GetWinterStartDate() {
+        // Find winter start Date.
+        public WeatherView GetWinterStartDate()
+        {
             //5 consecutive days with temperatures below 0 degrees is winter season and before 31 july.
             List<WeatherView> validDates = GetTemperautreAverageWithinBounds(Double.MinValue, 0);
             DateTime startDate = GetFirstDateWithConsecutiveDays(validDates, 5);
@@ -133,10 +153,60 @@ namespace Väderdata.Data
             }
             return default(WeatherView);
         }
+        //Set season to summer.
+        public void SetSummerSeason()
+        {
+            WeatherView summerStartDate = GetSummerStartDate();
+
+            if (summerStartDate != default)
+            {
+                db.WeatherViewData
+                    .Where(d => d.Date.Date >= summerStartDate.Date)
+                    .ToList()
+                    .ForEach(v => v.Season = "Sommar");
+                db.SaveChanges();
+            }
+        }
+        //Sets season to autumn.
+        public void SetAutumnSeason()
+        {
+            WeatherView autumnStartDate = GetAutumnStartDate();
+
+            if (autumnStartDate != default)
+            {
+                db.WeatherViewData
+                    .Where(d => d.Date.Date >= autumnStartDate.Date)
+                    .ToList()
+                    .ForEach(v => v.Season = "Höst");
+                db.SaveChanges();
+            }
+        }
+        //Sets season to winter.
+        public void SetWinterSeason()
+        {
+            WeatherView winterStartDate = GetWinterStartDate();
+
+            if (winterStartDate != default)
+            {
+                db.WeatherViewData
+                    .Where(d => d.Date.Date > winterStartDate.Date)
+                    .ToList()
+                    .ForEach(v => v.Season = "Vinter");
+                db.SaveChanges();
+            }
+        }
+
 
         //Get stats for one date.
         public WeatherView GetStatFromDate(WeatherView view)
         {
+            if (view == null)
+                return default;
+            if(view.Location == null || view == null)
+            {
+                return default;
+            }
+
             var query = db.WeatherViewData
                 .Where(d => (d.Date == view.Date))
                 .Where((p) => p.Location.Contains(view.Location));
@@ -147,9 +217,16 @@ namespace Väderdata.Data
             return default;
         }
 
-        //Get all records from the day
+        //Get all records from one day
         public List<Weather> GetRecordsFromDate(WeatherView view)
         {
+            if (view == null)
+                return default;
+            if (view.Location == null)
+            {
+                return default;
+            }
+
             List<Weather> query = db.WeatherData
                     .Where((m) => m.Date.Date.Equals(view.Date.Date))
                     .Where((p) => p.Location.Contains(view.Location))

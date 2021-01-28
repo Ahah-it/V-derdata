@@ -3,8 +3,8 @@
 @using Väderdata.Data
 @inject WeatherQueries query;
 
-<h1>Weather forecast</h1>
-<p>This component demonstrates fetching data from a service.</p>
+<h1>Daily Weather aggregates</h1>
+
 
 
 <button @onclick=ToggleButtonIndoor class="btn btn-primary">@toggleLocation</button>
@@ -15,7 +15,7 @@
 <button @onclick=GetAverageHumidityList class="btn btn-primary">Sort by Humidity</button>
 <button @onclick=GetMouldRiskList class="btn btn-primary">Sort by Mould Risk</button>
 
-<button @onclick=GetAutumn class="btn btn-primary">Sort by autumn</button>
+
 
 <table class="table">
     <thead>
@@ -25,6 +25,7 @@
             <th>Temperature</th>
             <th>Humidity</th>
             <th>Mould Risk</th>
+            <th>Season</th>
         </tr>
     </thead>
     <tbody>
@@ -38,6 +39,7 @@
             <td>@String.Format("{0:#,##0.00}", m.AverageTemperature)</td>
             <td>@String.Format("{0:#,##0.00}", m.AverageHumidity)</td>
             <td>@String.Format("{0:#,##0.00}", m.MouldRisk)</td>
+            <td>@m.Season</td>
         </tr>
             }
         }
@@ -46,65 +48,62 @@
 
 @code {
 
-        List<WeatherView> dailyList = new List<WeatherView>();
-        string toggleLocation = "Outdoor";
-        string toggleDescending = "Ascending";
-        bool indoor;
-        bool descending;
+    List<WeatherView> dailyList = new List<WeatherView>();
+    string toggleLocation = "Outdoor";
+    string toggleDescending = "Ascending";
+    bool indoor;
+    bool descending;
 
-        void ToggleButtonIndoor()
+    void ToggleButtonIndoor()
+    {
+        if (indoor)
         {
-            if (indoor)
-            {
-                toggleLocation = "Outdoor";
-                indoor = false ;
-            } else
-            {
-                toggleLocation = "Indoor";
-                indoor = true;
-            }
+            toggleLocation = "Outdoor";
+            indoor = false ;
+        } else
+        {
+            toggleLocation = "Indoor";
+            indoor = true;
         }
+    }
 
-        void ToggleButtonDescending()
+    void ToggleButtonDescending()
+    {
+        if (descending)
         {
-            if (descending)
-            {
-                toggleDescending = "Ascending";
-                descending = false;
-            }
-            else
-            {
-                toggleDescending = "Descending";
-                descending = true;
-            }
+            toggleDescending = "Ascending";
+            descending = false;
         }
+        else
+        {
+            toggleDescending = "Descending";
+            descending = true;
+        }
+    }
 
-        async Task GetAverageTemperatureList()
-        {
-            dailyList = await Task.Run(() => query.GetViewOrderedByTemperature(descending, indoor));
-        }
+    async Task GetAverageTemperatureList()
+    {
+        dailyList = await Task.Run(() => query.GetViewOrderedByTemperature(descending, indoor));
+    }
 
-        async Task GetAverageHumidityList()
-        {
-            dailyList = await Task.Run(() => query.GetViewOrderedByHumidity(descending, indoor));
-        }
+    async Task GetAverageHumidityList()
+    {
+        dailyList = await Task.Run(() => query.GetViewOrderedByHumidity(descending, indoor));
+    }
 
-        async Task GetMouldRiskList()
-        {
-            dailyList = await Task.Run(() => query.GetViewOrderedByMouldRisk(descending, indoor));
-        }
+    async Task GetMouldRiskList()
+    {
+        dailyList = await Task.Run(() => query.GetViewOrderedByMouldRisk(descending, indoor));
+    }
 
-        async Task GetAutumn()
-        {
-            WeatherView view = await Task.Run(() => query.GetAutumnStartDate());
-            if (view != default(WeatherView))
-            {
-                dailyList = new List<WeatherView>();
-                dailyList.Add(view);
-            }
-        }
-    
-        protected override async Task OnInitializedAsync()
+    async Task GetAutumn()
+    {
+        query.SetSummerSeason();
+        query.SetAutumnSeason();
+        query.SetWinterSeason();
+    }
+
+    protected override async Task OnInitializedAsync()
     {
         indoor = false;
         descending = false;

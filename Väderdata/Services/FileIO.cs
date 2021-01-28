@@ -13,10 +13,12 @@ namespace Väderdata.Services
     {
         WeatherContext context;
         IWebHostEnvironment env;
-        public FileIO(WeatherContext context, IWebHostEnvironment env)
+        WeatherQueries query;
+        public FileIO(WeatherContext context, IWebHostEnvironment env, WeatherQueries query)
         {
             this.context = context;
             this.env = env;
+            this.query = query;
         }
 
         public int ReadFileIntoDatabase()
@@ -37,7 +39,7 @@ namespace Väderdata.Services
             var uniqueDates = weatherList.GroupBy(x => x.Date.Date).ToHashSet();
             List<WeatherView> weatherViewList = new List<WeatherView>();
             CreateDailyView(weatherList, uniqueDates, weatherViewList);
-
+                
             //Add & Save changes to database.
             Task t2 = context.AddRangeAsync(weatherViewList);
             t2.Wait();
@@ -46,13 +48,19 @@ namespace Väderdata.Services
             weatherViewList.Clear();
             weatherList.Clear();
 
+            query.SetSummerSeason();
+            query.SetAutumnSeason();
+            query.SetWinterSeason();
+            context.SaveChanges();
+
             return counter;
 
         }
 
         private static void CreateDailyView(List<Weather> weatherList, HashSet<IGrouping<DateTime, Weather>> uniqueDates, List<WeatherView> weatherViewList)
         {
-            foreach (var date in uniqueDates)
+
+            Parallel.ForEach(uniqueDates, (date) =>
             {
                 WeatherView indoorView = new WeatherView();
                 WeatherView outdoorView = new WeatherView();
@@ -78,7 +86,7 @@ namespace Väderdata.Services
 
                 weatherViewList.Add(indoorView);
                 weatherViewList.Add(outdoorView);
-            }
+            });
         }
 
         private static double CalculateMouldRisk(WeatherView view)

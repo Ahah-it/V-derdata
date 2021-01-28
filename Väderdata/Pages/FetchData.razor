@@ -22,29 +22,34 @@
             <th>Humidity</th>
             <th>Mould Risk</th>
             <th>Location</th>
+            <th>Season</th>
         </tr>
     </thead>
     <tbody>
 
         <tr>
-            @if (dateView.Date != default(DateTime))
+            @if (dateView != null && dateView.WeatherList.Any())
             {
                 <td>@dateView.Date.ToShortDateString()</td>
                 <td>@String.Format("{0:#,##0.00}", dateView.AverageTemperature)</td>
                 <td>@String.Format("{0:#,##0.00}", dateView.AverageHumidity)</td>
                 <td>@String.Format("{0:#,##0.00}", dateView.MouldRisk)</td>
                 <td>@dateView.Location</td>
+                <td>@dateView.Season</td>
             }
             else
             {
                 <td>Not Found</td>
             }
         </tr>
-        </tbody>
+    </tbody>
 
-    </table>
+</table>
 
-<h2>Measurements for @dateView.Date.ToShortDateString()</h2>
+@if (dateView != null)
+{
+    <h2>Measurements for @dateView.Date.ToShortDateString()</h2>
+}
 <table class="table">
     <thead>
         <tr>
@@ -55,31 +60,32 @@
         </tr>
     </thead>
     <tbody>
-        @if (dateView.WeatherList.Any())
-        {
-            @foreach (var m in dateView.WeatherList)
+        @if (dateView != null)
+            @if (dateView.WeatherList.Any())
+            {
+                @foreach (var m in dateView.WeatherList)
+                {
+                    <tr>
+
+                        <td>@m.Date</td>
+                        <td>@m.Location</td>
+                        <td>@m.Temperature</td>
+                        <td>@m.Humidity</td>
+                    </tr>
+                }
+            }
+            else
             {
                 <tr>
-
-                    <td>@m.Date</td>
-                    <td>@m.Location</td>
-                    <td>@m.Temperature</td>
-                    <td>@m.Humidity</td>
+                    <td>Not Found</td>
                 </tr>
             }
-        }
-        else
-        {
-    <tr>
-        <td>Not Found</td>
-    </tr>
-        }
     </tbody>
 </table>
 
 @code {
 
-    WeatherView dateView = new WeatherView();
+    WeatherView dateView = new WeatherView() { Location = "Ute", WeatherList = new List<Weather>() };
     string toggleLocation = "Outdoor";
 
     void ToggleButton()
@@ -98,23 +104,23 @@
 
     async Task DateSubmitted()
     {
+
         dateView = await Task.Run(() => query.GetStatFromDate(dateView));
         if (dateView != null)
         {
             dateView.WeatherList = await Task.Run(() => query.GetRecordsFromDate(dateView));
-        } else
+        }
+        else
         {
             dateView = new WeatherView();
             dateView.WeatherList = new List<Weather>();
             dateView.Location = "Ute";
-            
+            toggleLocation = "Outdoor";
+
         }
+        this.StateHasChanged();
     }
 
-    protected override async Task OnInitializedAsync()
-    {
-        dateView.Location = "Ute";
-        dateView.WeatherList = new List<Weather>();
-    }
 }
+
 

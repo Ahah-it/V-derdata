@@ -10,8 +10,8 @@ using Väderdata.Data;
 namespace Väderdata.Migrations
 {
     [DbContext(typeof(WeatherContext))]
-    [Migration("20210120032220_test")]
-    partial class test
+    [Migration("20210128050818_Initial")]
+    partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -67,10 +67,15 @@ namespace Väderdata.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Location")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<double>("MouldRisk")
                         .HasColumnType("float");
+
+                    b.Property<string>("Season")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.HasKey("Id");
 
