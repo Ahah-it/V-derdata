@@ -15,10 +15,11 @@
 <button @onclick=GetAverageHumidityList class="btn btn-primary">Sort by Humidity</button>
 <button @onclick=GetMouldRiskList class="btn btn-primary">Sort by Mould Risk</button>
 
+<button @onclick=GetAutumn class="btn btn-primary">Sort by autumn</button>
+
 <table class="table">
     <thead>
         <tr>
-
             <th>Date</th>
             <th>Location</th>
             <th>Temperature</th>
@@ -45,56 +46,65 @@
 
 @code {
 
-    List<WeatherView> dailyList = new List<WeatherView>();
-    string toggleLocation = "Outdoor";
-    string toggleDescending = "Ascending";
-    bool indoor;
-    bool descending;
+        List<WeatherView> dailyList = new List<WeatherView>();
+        string toggleLocation = "Outdoor";
+        string toggleDescending = "Ascending";
+        bool indoor;
+        bool descending;
 
-    void ToggleButtonIndoor()
-    {
-        if (indoor)
+        void ToggleButtonIndoor()
         {
-            toggleLocation = "Outdoor";
-            indoor = false ;
-        } else
-        {
-            toggleLocation = "Indoor";
-            indoor = true;
+            if (indoor)
+            {
+                toggleLocation = "Outdoor";
+                indoor = false ;
+            } else
+            {
+                toggleLocation = "Indoor";
+                indoor = true;
+            }
         }
-    }
 
-    void ToggleButtonDescending()
-    {
-        if (descending)
+        void ToggleButtonDescending()
         {
-            toggleDescending = "Ascending";
-            descending = false;
+            if (descending)
+            {
+                toggleDescending = "Ascending";
+                descending = false;
+            }
+            else
+            {
+                toggleDescending = "Descending";
+                descending = true;
+            }
         }
-        else
+
+        async Task GetAverageTemperatureList()
         {
-            toggleDescending = "Descending";
-            descending = true;
+            dailyList = await Task.Run(() => query.GetViewOrderedByTemperature(descending, indoor));
         }
-    }
 
-    async Task GetAverageTemperatureList()
-    {
-        dailyList = await Task.Run(() => query.GetViewOrderedByTemperature(descending, indoor));
-    }
+        async Task GetAverageHumidityList()
+        {
+            dailyList = await Task.Run(() => query.GetViewOrderedByHumidity(descending, indoor));
+        }
 
-    async Task GetAverageHumidityList()
-    {
-        dailyList = await Task.Run(() => query.GetViewOrderedByHumidity(descending, indoor));
-    }
+        async Task GetMouldRiskList()
+        {
+            dailyList = await Task.Run(() => query.GetViewOrderedByMouldRisk(descending, indoor));
+        }
 
-    async Task GetMouldRiskList()
-    {
-        dailyList = await Task.Run(() => query.GetViewOrderedByMouldRisk(descending, indoor));
-    }
-
-
-    protected override async Task OnInitializedAsync()
+        async Task GetAutumn()
+        {
+            WeatherView view = await Task.Run(() => query.GetAutumnStartDate());
+            if (view != default(WeatherView))
+            {
+                dailyList = new List<WeatherView>();
+                dailyList.Add(view);
+            }
+        }
+    
+        protected override async Task OnInitializedAsync()
     {
         indoor = false;
         descending = false;

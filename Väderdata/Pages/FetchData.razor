@@ -1,7 +1,7 @@
 ﻿@page "/fetchdata"
 
 @using Väderdata.Data
-@inject WeatherContext context;
+@inject WeatherQueries query;
 
 <h2>Enter date</h2>
 
@@ -98,10 +98,10 @@
 
     async Task DateSubmitted()
     {
-        dateView = await Task.Run(() => context.GetStatFromDate(dateView));
+        dateView = await Task.Run(() => query.GetStatFromDate(dateView));
         if (dateView != null)
         {
-            dateView.WeatherList = await Task.Run(() => context.GetRecordsFromDate(dateView));
+            dateView.WeatherList = await Task.Run(() => query.GetRecordsFromDate(dateView));
         } else
         {
             dateView = new WeatherView();

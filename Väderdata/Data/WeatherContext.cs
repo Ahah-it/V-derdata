@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Linq;
 
 namespace Väderdata.Data
 {
@@ -26,30 +25,6 @@ namespace Väderdata.Data
                 .WithMany(b => b.WeatherList);
         }
 
-        //Get all records from the day
-        public List<Weather> GetRecordsFromDate(WeatherView view)
-        {
-            return WeatherData
-                .Where((m) => m.Date.Date.Equals(view.Date.Date))
-                .Where((p) => p.Location == (view.Location))
-                .ToList();
-        }
-
-        public WeatherView GetStatFromDate(WeatherView view)
-        {
-            //Look up record if it exists already.
-            var query = WeatherViewData.Where(d => (d.Date == view.Date));
-            if(query.Any())
-            {
-                if(query.First().Location.Contains(view.Location))
-                    return query.First();
-            }
-
-
-            return view;
-        }
-        
-       
 
     }
 }
