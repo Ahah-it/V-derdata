@@ -33,11 +33,9 @@ namespace Väderdata.Services
             t1.Wait();
             context.SaveChanges();
 
-
+            //Create Daily views for every date.
             var uniqueDates = weatherList.GroupBy(x => x.Date.Date).ToHashSet();
-
             List<WeatherView> weatherViewList = new List<WeatherView>();
-
             CreateDailyView(weatherList, uniqueDates, weatherViewList);
 
             //Add & Save changes to database.
@@ -98,8 +96,6 @@ namespace Väderdata.Services
                 NumberFormatInfo provider = new NumberFormatInfo();
                 provider.NumberDecimalSeparator = ".";
                 provider.NumberGroupSeparator = "";
-
-
 
                 //Parse csv records and add them to list
                 while ((line = reader.ReadLine()) != null)

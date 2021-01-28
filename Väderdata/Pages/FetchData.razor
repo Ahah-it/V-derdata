@@ -6,17 +6,20 @@
 <h1>Weather forecast</h1>
 <p>@dateView.AverageTemperature</p>
 <p>This component demonstrates fetching data from a service.</p>
+
 <EditForm Model=@dateView OnSubmit=@DateSubmitted>
     <InputDate @bind-Value=dateView.Date ParsingErrorMessage="Must be a date" />
     <br />
     <input type="submit" value="Submit" class="btn btn-primary" />
     
 </EditForm>
+
 <button @onclick=ToggleButton class="btn btn-primary">@toggleLocation</button>
 
 <table class="table">
     <thead>
         <tr>
+            
             <th>Date</th>
             <th>Location</th>
             <th>Temperature</th>
@@ -29,6 +32,7 @@
             @foreach (var m in dateView.WeatherList)
             {
                 <tr>
+                    
                     <td>@m.Date</td>
                     <td>@m.Location</td>
                     <td>@m.Temperature</td>
@@ -56,10 +60,9 @@
             dateView.Location = "Inne";
         }
     }
+
     async Task DateSubmitted()
     {
-
-
         dateView = await Task.Run(() => context.GetStatFromDate(dateView));
         dateView.WeatherList = await Task.Run(() => context.GetRecordsFromDate(dateView));
     }
